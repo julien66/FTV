@@ -1,0 +1,71 @@
+{% extends "bootstrap/base.html" %}
+{% block head %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='app.js')}}"></script>
+{% endblock %}
+
+{% block title %} FTV Tools {% endblock %}
+
+{% block content %}
+    {% if table %}
+        {% if op and op != 'Reset!' %}
+            <div class="row">
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3"></div>
+                <div class="col-sm-3">
+                    <form action="{{ url_for('add_task') }}" method="post">
+                        <input type="hidden" name="url" value="{{ url }}">
+                        <input type="hidden" name="ftv" value="{{ ftv }}">
+                        <input class="form-control" name="action" type="submit" value="Reset!">
+                    </form>
+                </div>
+            </div>
+            <br>
+        {% endif %}
+        <div class="row">
+            <form action="{{ url_for('add_task') }}" method="post">
+                    <input type="hidden" name="url" value="{{ url }}">
+                    <input type="hidden" name="ftv" value="{{ ftv }}">
+                    <div class="col-sm-3">
+                        <input class="form-control btn-danger" name="action" type="submit" value="Add 0 point">
+                    </div>
+                    <div class="col-sm-3">
+                        <input class="form-control btn-warning" name="action" type="submit" value="Add 950 points">
+                    </div>
+                    <div class="col-sm-3">
+                        <input class="form-control btn-success" name="action" type="submit" value="Add 1000 points">
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="add_custom_points"></label>
+                        <input class="form-control" type="number" name="add_custom_points" value="{{ amount }}">
+                        <input class="form-control btn-default" name="action" type="submit" value="Add this amount">
+                    </div>
+                </form>
+        </div>
+        <br>
+        {{ table|safe }}
+    {% else %}
+        <h1>Welcolme to FTV tools</h1>
+        <div class="container-fluid">
+        <div class="row">
+        <div class="col-sm-6">
+            <form action="{{ url_for('get_results') }}" method="post">
+                <div class="form-group">
+                    <label for="url">Copy paste an url with results :</label>
+                    <input class="form-control" type="url" name="url">
+
+                    <label for="ftv">FTV % :</label>
+                    <input class="form-control" type="number" name="ftv" value="25" step="5">
+
+                    <br>
+                    <br>
+
+                    <input class="form-control" type="submit">
+                </div>
+            </form>
+        </div>
+        </div>
+        </div>
+    {% endif %}
+{% endblock %}
