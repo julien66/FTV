@@ -15,7 +15,7 @@
                 <div class="col-sm-3"></div>
                 <div class="col-sm-3">
                     <form action="{{ url_for('add_task') }}" method="post">
-                        <input type="hidden" name="url" value="{{ url }}">
+                        <input type="hidden" name="data" value="{{ data }}">
                         <input type="hidden" name="ftv" value="{{ ftv }}">
                         <input class="form-control" name="action" type="submit" value="Reset!">
                     </form>
@@ -25,7 +25,7 @@
         {% endif %}
         <div class="row">
             <form action="{{ url_for('add_task') }}" method="post">
-                    <input type="hidden" name="url" value="{{ url }}">
+                    <input type="hidden" name="data" value="{{ data }}">
                     <input type="hidden" name="ftv" value="{{ ftv }}">
                     <div class="col-sm-3">
                         <input class="form-control btn-danger" name="action" type="submit" value="Add 0 point">
@@ -50,10 +50,18 @@
         <div class="container-fluid">
         <div class="row">
         <div class="col-sm-6">
-            <form action="{{ url_for('get_results') }}" method="post">
+            <form action="{{ url_for('get_results') }}" method="post" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="url">Copy paste an url with results :</label>
+                    <label for="url">Copy paste an url with results (only works with Urlic Jesop's CompCheck now) :</label>
                     <input class="form-control" type="url" name="url">
+
+                        <h6>OR</h6>
+
+                    <label for="url">Provide a file with result (Rank, Name, Nation, T1, T2 ..., Score )</label>
+                    <input class="form-control" type="file" name="file_result">
+
+                    <br>
+                    <br>
 
                     <label for="ftv">FTV % :</label>
                     <input class="form-control" type="number" name="ftv" value="25" step="5">

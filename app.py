@@ -15,42 +15,46 @@ green_cm = sns.light_palette("green", as_cmap=True)
 @app.route('/add_task', methods=['POST'])
 def add_task():
     ftv = float(request.form['ftv']) / 100
-    url = request.form['url']
+    data = request.form['data']
     op = request.form['action']
-    return get_results(url, ftv, op)
+    return get_results(data, ftv, op)
 
 
 @app.route('/results', methods=['POST'])
-def get_results(url=False, ftv=False, operation=False, amount=900):
+def get_results(data=False, ftv=False, operation=False, amount=900):
     if ftv:
         ftv = ftv
     else:
         ftv = int(request.form['ftv']) / 100
 
-    if url:
-        url = url
-    else :
+    if 'url' in request.form and request.form['url']:
         url = request.form['url']
+        r = requests.get(url, allow_redirects=True)
+        table = pd.read_html(r.content)
+        df = table[3].drop(['ID', 'Glider', 'Score', 'Sponsor'], axis=1, errors='ignore')
+    elif 'file_result' in request.files and request.files['file_result']:
+        file = request.files['file_result']
+        if file:
+            df = pd.read_excel(file)
+    elif data:
+        df = pd.read_json(data)
+
+    df = df.drop(['Results', 'Score', 'New Rank', 'Next', 'diff'], axis=1, errors='ignore')
 
     if operation and operation != 'Reset!':
         operation = operation
 
-    if url :
-        r = requests.get(url, allow_redirects=True)
-        table = pd.read_html(r.content)
-        df = table[3].drop(['ID', 'Glider', 'Score', 'Sponsor'], axis=1)
-
     final_results = []
     pilot_quantity = df.shape[0]
     if operation == 'Add 0 point':
-        df['0'] = ['0' for k in range(pilot_quantity)]
+        df['Next'] = ['0' for k in range(pilot_quantity)]
     if operation == 'Add 950 points':
-        df['950'] = ['950' for k in range(pilot_quantity)]
+        df['Next'] = ['950' for k in range(pilot_quantity)]
     if operation == 'Add 1000 points':
-        df['1000'] = ['1000' for k in range(pilot_quantity)]
+        df['Next'] = ['1000' for k in range(pilot_quantity)]
     if operation == 'Add this amount':
         amount = request.form['add_custom_points']
-        df[amount] = [amount for k in range(pilot_quantity)]
+        df['Next'] = [amount for k in range(pilot_quantity)]
 
     column_scores = get_score_column(df)
     df[column_scores] = df[column_scores].applymap(remove_discard_display)
@@ -102,6 +106,7 @@ def get_results(url=False, ftv=False, operation=False, amount=900):
 
     df['Results'] = final_results
     df = df.sort_values('Results', ascending = False)
+
     if operation and operation != "Reset!" :
         df.insert(0, "New Rank", [k+1 for k in range(pilot_quantity)])
         df['diff'] = df['Rank'] - df['New Rank']
@@ -110,7 +115,7 @@ def get_results(url=False, ftv=False, operation=False, amount=900):
     return render_template('index.html',
                            amount = 800,
                            ftv=ftv*100,
-                           url=url,
+                           data=df.to_json(),
                            table= df.to_html(
                                classes=["table", "table-bordered", "table-striped", "table-hover"],
                                index=False
@@ -122,12 +127,14 @@ def get_score_column(df) :
     return df.columns[3::]
 
 def remove_discard_display(score):
-    score = score.replace('-', '0')
-
-    if "/" in score:
-        return float(score.split("/")[1])
+    if isinstance(score, str):
+        score = score.replace('-', '0')
+        if "/" in score:
+            return float(score.split("/")[1])
+        else:
+            return float(score)
     else:
-        return float(score)
+        return score
 
 def get_maximal_scores(df) :
     return df.max().to_frame().T.values.tolist()[0]
@@ -137,7 +144,7 @@ def get_credit_discard(maxi_scores, ftv) :
 
 
 @app.route('/')
-def hello_world():
+def index():
     return render_template('index.html')
 
 
