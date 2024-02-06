@@ -110,7 +110,8 @@ def get_results(data=False, ftv=False, operation=False, amount=900):
     if operation and operation != "Reset!" :
         df.insert(0, "New Rank", [k+1 for k in range(pilot_quantity)])
         df['diff'] = df['Rank'] - df['New Rank']
-        df.style.background_gradient(cmap=green_cm, subset=pd.IndexSlice[:, ['diff']])
+
+    df.style.apply(highlight_max, props='color:white;background-color:darkblue', axis=0)
 
     return render_template('index.html',
                            amount = 800,
@@ -122,6 +123,11 @@ def get_results(data=False, ftv=False, operation=False, amount=900):
                            ),
                            op = operation,
                            )
+
+
+def highlight_max(s, props=''):
+    return np.where(s == np.nanmax(s.values), props, '')
+
 
 def get_score_column(df) :
     return df.columns[3::]
